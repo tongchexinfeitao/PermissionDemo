@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
+        switch (requestCode) {
             case GO_TO_SETTING_REQUEST_CODE:
                 if (ContextCompat.checkSelfPermission(this, CAMERA_PERMISSION) == PackageManager.PERMISSION_GRANTED) {
                     Log.e(TAG, "===========设置页面返回之后-再次检查权限---用户已经拥有相机这个权限了");
@@ -89,25 +89,18 @@ public class MainActivity extends AppCompatActivity {
                         startCamera();
                     } else {
                         Log.e(TAG, "===========权限回调---用户拒绝了");
-
-                        //// TODO: 2017/10/16
-                       //如果有系统权限弹窗的话，就不用去解释权限了直接告诉用户怎么设置就行
-//                        showTipGoSetting();
-                        //如果没有系统权限弹窗的话，需要解释一下需要什么权限
-//                        showTipExplainPermission();
-
                         /**
-                         * 如 果系统不再解释权限，我们去解释权限 （用户勾选了不再询问，系统就不会再解释权限了）
+                         * 用户拒绝权限，而且没有勾选不再提醒， shouldShowRequestPermissionRationale会返回true，其他返回false
                          */
-                        if(ActivityCompat.shouldShowRequestPermissionRationale(this,CAMERA_PERMISSION)){
-                                Log.e(TAG,"=========== shouldShowRequestPermissionRationale 返回值为 true");
-
-                            //返回tue 因为系统刚刚有权限弹窗，所以不用解释了，直接告诉用户如何开启权限
-                            showTipGoSetting();
-                        }else {
-                            //返回false ，用户勾选了  不再询问，之后系统也不会再弹出系统权限弹框，所以我们自己弹框解释
-                            Log.e(TAG,"=========== shouldShowRequestPermissionRationale 返回值为 false");
+                        if (ActivityCompat.shouldShowRequestPermissionRationale(this, CAMERA_PERMISSION)) {
+                            Log.e(TAG, "=========== shouldShowRequestPermissionRationale 返回值为 true");
+                            //解释权限，用户点击确定，继续申请权限
                             showTipExplainPermission();
+                        } else {
+                            //返回false ，用户勾选了  不再询问，之后系统也不会再弹出系统权限弹框，所以我们自己弹框解释
+                            Log.e(TAG, "=========== shouldShowRequestPermissionRationale 返回值为 false");
+                            //告诉用户缺少权限，可以通过setting页面打开
+                            showTipGoSetting();
                         }
                     }
                 }
@@ -121,17 +114,16 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showTipExplainPermission() {
         new AlertDialog.Builder(this)
-                .setTitle("说明")
+                .setTitle("帮助")
                 .setMessage("需要相机权限，去拍照")
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-
-                        //告诉用户怎么去打开权限
-                        showTipGoSetting();
+                        //请求权限
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{CAMERA_PERMISSION}, CAMERA_PERMISSION_REQUEST_CODE);
                     }
                 })
-                .setNegativeButton("取消",null)
+                .setNegativeButton("取消", null)
                 .show();
     }
 
@@ -140,8 +132,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public void showTipGoSetting() {
         new AlertDialog.Builder(this)
-                .setTitle("需要打开相机权限")
-                .setMessage("在设置-权限中去打开相机权限")
+                .setTitle("帮助")
+                .setMessage("当前应用缺少【相机】权限\n\n请点击\"设置\"-\"应用权限\"去打开所需权限")
                 .setPositiveButton("立即开启", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -150,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
                         goToSetting();
                     }
                 })
-                .setNegativeButton("取消",null)
+                .setNegativeButton("取消", null)
                 .show();
     }
 
@@ -161,9 +153,9 @@ public class MainActivity extends AppCompatActivity {
     private void goToSetting() {
         Intent intent = new Intent();
         intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        Uri uri = Uri.fromParts("package",getPackageName(),null);
+        Uri uri = Uri.fromParts("package", getPackageName(), null);
         intent.setData(uri);
-        startActivityForResult(intent,GO_TO_SETTING_REQUEST_CODE);
+        startActivityForResult(intent, GO_TO_SETTING_REQUEST_CODE);
     }
 
 
